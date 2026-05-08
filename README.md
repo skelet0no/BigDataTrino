@@ -1,3 +1,23 @@
+## Запуск
+
+```
+docker compose up -d
+type etl\trino_etl.sql | docker exec -i trino trino
+type etl\trino_report.sql | docker exec -i trino trino
+```
+
+### Проверка
+
+```
+docker exec -it clickhouse-trino bash
+SHOW DATABASES;
+USE dwh;
+SHOW TABLES;
+SELECT COUNT(*) FROM fact_sales;
+SELECT * FROM fact_sales LIMIT 5;
+SELECT * FROM mart_time_yearly_revenue LIMIT 5;
+```
+
 # BigDataTrino
 Анализ больших данных - лабораторная работа №4 - ETL реализованный с помощью Trino
 

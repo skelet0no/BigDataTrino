@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-trino
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: bd_trino
+      GDATA: "/var/lib/postgresql/18/docker"
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+      - ./init-db:/docker-entrypoint-initdb.d
+      - ./исходные данные:/docker-entrypoint-initdb.d/data:ro
+    networks:
+      - trino_net
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3
+    container_name: clickhouse-trino
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - ./clickhouse-init:/docker-entrypoint-initdb.d
+      - ./исходные данные:/data:ro
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: password
+    networks:
+      - trino_net
+
+  trino:
+    image: trinodb/trino:latest
+    container_name: trino
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - clickhouse
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./trino/etc:/etc/trino
+      - ./etl:/etl
+    networks:
+      - trino_net
+
+
+volumes:
+  postgres-data:
+  clickhouse-data:
+
+networks:
+  trino_net:
+    driver: bridge
